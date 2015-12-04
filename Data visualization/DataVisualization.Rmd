@@ -1,0 +1,392 @@
+---
+title: "Data Visualization"
+author: "Saul Garcia"
+date: "2015"
+output: 
+  html_document:
+    toc: true
+    theme: united
+---
+#Data Visualization with ggvis
+
+##Summary
+This is a small review of the lessons learned of Data Visualization  at [Datacamp](www.datacamp.com), if you want to start your journey as a Data Scientist, it is definitely a good starting point. The datasets used in this small tutorial are all within R studio environment.
+
+##Installing and Loading ggvis
+Install the ggvis and maps packages by calling: 
+`install.packages("ggvis")`
+`install.packages("maps")`
+```{r, message=FALSE}
+library(ggvis)
+library(maps)
+library(dplyr)
+```
+
+##Starting with plots
+First of all we are going to create simple plots. It is improtant to notice that `ggvis` package uses the same syntax as `dplyr` which is convenient to understand when comibining these skills with data manipulation. At this point it is important just to get a sense of the grammar syntax that it is used in `ggvis`.
+
+```{r, eval=FALSE}
+#Code to make a graph with red points
+mtcars %>% ggvis(~wt, ~mpg, fill := "red") %>% layer_points() %>% 
+    set_options(height = 250, width = 380)
+
+#Code to draw a graph with smooths instead of points
+mtcars %>% ggvis(~wt, ~mpg, stroke:="blue") %>% 
+    layer_smooths() %>% 
+    set_options(height = 250, width = 380)
+```
+```{r, echo=FALSE}
+#Print previous plots
+mtcars %>% ggvis(~wt, ~mpg, fill := "red") %>% layer_points() %>% set_options(height = 250, width = 380)
+```
+```{r, echo=FALSE}
+mtcars %>% ggvis(~wt, ~mpg, stroke:="blue") %>% layer_smooths() %>% set_options(height = 250, width = 380)
+```
+(So far I haven't found how to plot them side by side. If you know, let me know.)
+
+##Type of plots
+When creating plots with `ggvis`, there are basically three type of plots that are pretty useful to learn by heart. We are going to create simple graph using three different functions in order to create a Scatterplot, Histogram, and Line graph: `layer_points`, `layer_bars`, and `layer_lines`.
+
+###Scatterplot
+```{r, }
+# Make a scatterplot of the pressure dataset
+pressure %>% 
+  ggvis(~temperature, ~pressure) %>% 
+  layer_points %>%
+  set_options(height = 250, width = 380)
+```
+
+###Bar graph
+There is a slight difference between a Bar graph and an Histogram, which will be discussed further in the document.
+```{r, }
+# Bar graph of the pressure dataset
+pressure %>% 
+  ggvis(~temperature, ~pressure) %>% 
+  layer_bars %>%
+  set_options(height = 250, width = 380)
+```
+
+###Line graph
+```{r, }
+# Line graph of the pressure dataset
+pressure %>% 
+  ggvis(~temperature, ~pressure) %>% 
+  layer_lines %>%
+  set_options(height = 250, width = 380)
+```
+
+As you can see, it is quite simple to change the type of graph, given that all the parameters are inside `ggvis()`function.
+
+##Filling
+In order have a better visualization, it is always better to have more colorful insights, which allow us to make easier interpretations. Here we will explore the different ways of setting colors or "fillings" to our graphs.
+
+In the beginning we displayed a `scatterplot` and its `smooth`. This time we are bringing both of them together in one plot. 
+```{r}
+#Plotting Weight against milage per gallon.
+mtcars %>% ggvis(~wt, ~mpg) %>% 
+    layer_points(fill := "red") %>% 
+    layer_smooths(stroke:="blue") %>%    
+    set_options(height = 250, width = 380)
+```
+In previous two plots, the color is assigned directly in the `ggvis` code. But now, if you take a closer look, you can see the difference in the method used for assigning color.
+In this last one, is possible to call the properties for each layer in its given code:  
+*layer_points(fill := "red")* and *layer_smooths(stroke:="blue")*  
+
+It is also possible to have your plot filled by an inner variable of your dataset, to visualize this, we will show an example:
+```{r,eval=FALSE}
+# Plotting temperature against pressure, and filling according to the temperature.
+pressure %>% 
+  ggvis(~temperature, ~pressure, fill= ~temperature) %>% 
+  layer_points %>%    
+  set_options(height = 250, width = 410)
+
+# Plotting temperature against pressure, and filling and sizing it according to the temperature, and pressure respectively.
+pressure %>% 
+  ggvis(~temperature, ~pressure, fill= ~temperature,size=~pressure) %>% 
+  layer_points() %>%    
+  set_options(height = 250, width = 410)
+```
+```{r,echo=FALSE}
+#Print previous plots together
+pressure %>% ggvis(~temperature, ~pressure, fill= ~temperature) %>% layer_points %>% set_options(height = 250, width = 410)
+pressure %>% ggvis(~temperature, ~pressure, fill= ~temperature,size=~pressure) %>% layer_points() %>%
+  add_legend(c("fill","size"), title= "temp and pres", orient = "right") %>%
+  set_options(height = 250, width = 410) 
+```
+
+**Remark**  
+It is important to notice the way its colored, when assigning a value, there are two methods:  
+* fill = variable  
+* fill := "red"  
+
+The semicolon and equal sign is telling that the value assigned is not part of the dataframe `mtcars`. If you were to set `fill = "red"`, R would be trying to look for variable called "red" within the dataframe, in order to set the filling.
+
+##Manipulate properties
+If setting the colors is not enough, `ggvis` allows us to manny different properties when using the points and lines mark. 
+
+###Points
+For `point graphs`  it includes `x`, `y`, `fill`, `fillOpacity`, `opacity`, `shape`, `size`, `stroke`, `strokeOpacity`, and `strokeWidth`.  
+The shape property, for example, recognizes several different values: `circle` (default), `square`, `cross`, `diamond`, `triangle-up`, and `triangle-down`.
+
+To ilustrate this example we are going to use the `pressure`, and the `faithful` datasets.
+```{r,eval=FALSE}
+#Plotting the temperature against pressure with an orange fill.
+pressure %>%  
+  ggvis(~temperature, ~pressure, fill := "orange") %>% 
+  layer_points() %>%    
+  set_options(height = 250, width = 380)
+
+# Plotting waiting time against eruptions.
+# Setting the size according to the eruptions, the opacity to 50%.
+# The points will have a blue color and a black stroke.
+faithful %>%
+    ggvis(~waiting, ~eruptions, size= ~eruptions, opacity:=0.5, fill:= "blue", stroke:="black") %>%
+    layer_points() %>%    
+    set_options(height = 250, width = 420)
+
+# Plotting waiting time against eruptions.
+# Setting the fillOpacity according to eruptions, and size to 100.
+# The points will have the a red filled cross shape and a red stroke.
+faithful %>% 
+  ggvis(~waiting, ~eruptions, fillOpacity =~eruptions , size:=100, stroke:= "red", shape:="cross", fill:= "red") %>% 
+  layer_points() %>%    
+  set_options(height = 250, width = 380)
+   
+```
+```{r,echo=FALSE}
+pressure %>%  
+  ggvis(~temperature, ~pressure, fill := "orange") %>% 
+  layer_points() %>%    
+  set_options(height = 250, width = 380)
+
+# Plot the faithful data as described in the second instruction
+faithful %>%
+    ggvis(~waiting, ~eruptions, size= ~eruptions, opacity:=0.5, fill:= "blue", stroke:="black") %>%
+    layer_points() %>%    
+    set_options(height = 250, width = 420)
+
+# Plot the faithful data as described in the third instruction
+faithful %>% 
+  ggvis(~waiting, ~eruptions, fillOpacity =~eruptions , size:=100, stroke:= "red", shape:="cross", fill:= "red") %>% 
+  layer_points() %>%    
+  set_options(height = 250, width = 380)
+   
+```
+
+###Lines
+Similar to points, `lines` have specific properties; they respond to: `x`, `y`, `fill`, `fillOpacity`, `opacity`, `stroke`, `strokeDash`, `strokeOpacity`, and `strokeWidth`. Practically `lines`and `points` share the same properties, some are missing (e.g., no size property) and others are new (e.g., strokeDash).
+````{r,echo=FALSE}
+# Now we will be using the layer_lines() and modify its properties.
+# We will set a strokeDash = 6, strokeWidth = 2, with a red color (stroke).
+pressure %>% 
+  ggvis(~temperature, ~pressure, strokeDash:=6, strokeWidth:=2 , stroke:="red") %>% 
+  layer_lines() %>%    
+  set_options(height = 250, width = 380)
+```
+
+The lines mark will always connect the points in your plot from left to right. But you might not want this if your goal is to build an specific shape.
+
+For example, on the next code, we are going to store the latitude and longitude points Georgia, and we are going to let `ggvis` connect them in the right order by using `layer_paths()`. The paths mark is similar to the lines mark except that it connects points in the order that they appear in the data set. So the paths mark will connect the point that corresponds to the first row of the data to the point that corresponds to the second row of data, and so on — no matter where those points appear in the graph. In order to create a polygon, is as simple as just setting a collor for the `fill` property of the line or path.
+```{r,eval=FALSE}
+# Subsetting the data of gerogia state limits.
+georgia <- ggplot2::map_data("state", region = "georgia")
+
+# Plotting using layer_lines
+georgia %>% ggvis(~long,~lat, fill:="purple") %>% layer_lines()
+
+# Plotting all the points using layer_path
+georgia %>% ggvis(~long,~lat, fill:="purple") %>% layer_paths()
+```
+First the dataset is prepared:
+```{r,echo=FALSE}
+# Subsetting the data of gerogia state limits.
+georgia <- ggplot2::map_data("state", region = "georgia")
+```
+Displaying the plot using `layer_lines()`
+```{r,echo=FALSE}
+# Subsetting the data of gerogia state limits.
+georgia %>% ggvis(~long,~lat, fill:="purple") %>% layer_lines() %>% set_options(height = 250, width = 380)
+```
+And now filling it up with `layer_paths()`
+```{r,echo=FALSE}
+# Subsetting the data of gerogia state limits.
+georgia %>% ggvis(~long,~lat, fill:="purple") %>% layer_paths() %>% set_options(height = 250, width = 380)
+```
+
+##Smooths, Histograms, Densities
+
+###Smooths  
+Earlier we showed a smooth, but what is it? A smooth is basically built given a scaterplot. Basically it is a prediction displayed in a line, in order to highlight the trend of our data. The `compute_smooth()` function returns two columns: `pred_` and  `resp_`, which if plotted, it will return a `layer_smooth()`, which `ggvis` has it naturally incorporated for us to use it.
+Lets explore our smooth:
+```{r}
+carssmooth<-mtcars %>% compute_smooth(mpg ~ wt)
+head(carssmooth)
+```
+Now if we use this following two codes, we will basically have the same result:
+```{r, eval=FALSE}
+# Useing 'ggvis()' and 'layer_lines()' to plot the results of compute smooth
+mtcars %>% compute_smooth(mpg ~ wt) %>% ggvis(~pred_,~resp_) %>% layer_lines() %>% layer_points
+
+# Using 'layer_smooths()' in order to substitute 'compute_smooth' and 'layer_lines'
+mtcars %>% ggvis(~wt, ~ mpg) %>% layer_smooths() %>% layer_points
+```
+We added the points in order to visualize the trend compare to the dataset.
+```{r}
+mtcars %>% ggvis(~wt, ~ mpg) %>% layer_smooths() %>% layer_points %>% set_options(height = 250, width = 380)
+```
+
+###Histograms
+The histogram is a useful tool in order to show the distribution of a single continuous variable. In `ggvis` `layer_histogram()` is used to display this plot and protray the data frecuency segmented in bins. Just like `layer_smooth` there is an internal computation which utilizes `compute_bins`, which by now won't be explained.  
+Changing the width of the bins in a histogram could be useful in order to reveal different types of information, for this we need to map the width argument of `layer_histograms()` to a number.
+```{r,}
+# Histogram with a binwidth of 5 units
+faithful %>% ggvis(~waiting) %>% layer_histograms(width=5) %>% set_options(height = 250, width = 380)
+```
+
+###Density Plots
+Density plots provide another way to display the distribution of a single variable. A density plot uses a line to display the density of a variable at each point in its range. Just like `layer_smooths`, `layer_densities()` has a built in computation which gets a prediction for the distribution of the variable. This time again the focus will be directly to `layer_densities()`, and not worry aboyt calling `compute_density()`.
+```{r,echo=FALSE, warning=FALSE}
+# Density plot directly using layer_densities.
+faithful %>% ggvis(~waiting, fill:="green") %>% layer_densities() %>% set_options(height = 250, width = 380)
+```
+
+####ggvis and dplyr
+A great tool to combine with `ggvis` is the `dplyr` data manipulation package. In this case it will allow us to portray the density plot segmented by the variable `cyl` transformed into a factor (or categorical).
+```{r,eval=FALSE}
+# Separate density for each unique combination of 'cyl' and 'am'.
+mtcars %>% group_by(cyl, am) %>% ggvis(~mpg, fill = ~factor(cyl)) %>% layer_densities() %>% 
+  set_options(height = 300, width = 610)
+
+# Map `fill` to the unique combinations of the grouping variables.
+mtcars %>% group_by(cyl, am) %>% ggvis(~mpg, fill =~interaction(cyl, am)) %>% layer_densities() %>%
+  set_options(height = 300, width = 630)
+```
+```{r,echo=FALSE, warning=FALSE}
+#PRINT PLOTS
+mtcars %>% group_by(cyl, am) %>% ggvis(~mpg, fill = ~factor(cyl)) %>% layer_densities() %>% 
+  set_options(height = 300, width = 610)
+
+mtcars %>% group_by(cyl, am) %>% ggvis(~mpg, fill =~interaction(cyl, am)) %>% layer_densities() %>%
+  set_options(height = 300, width = 630)
+```
+
+##Multilayered plots
+With `ggvis` is also possible to create multi-layered plots. By setting or mapping a property inside `ggvis()`, it will be applied globally, but it could be applied locally by doing this inside a `layer_()`
+function. . Where applicable, local properties will override global properties.
+```{r,}
+pressure %>% 
+  ggvis(~temperature, ~pressure, stroke := "skyblue", strokeOpacity := 0.5, strokeWidth := 5) %>% 
+  layer_lines() %>% 
+  layer_points( fill = ~temperature ,shape := "triangle-up", size := 200) %>% 
+  set_options(height = 280, width = 450)
+```
+
+With `ggvis` is also simple to model a prediction line fitted to the data. For this we use `layer_model_predictions()` which is similar to `layer_smooths()`, but you can extend it to more models than just the `loess` or `gam` model. It takes a parameter named model; it should be set to a character string that contains the name of an R model function. So for example, you could draw the model line of a linear model with: layer_model_predictions(model = "lm").
+
+```{r, warning=FALSE}
+# Graph containing a scatterplot, a linear model and a smooth line.
+pressure %>% 
+    ggvis(~temperature, ~pressure) %>%
+    layer_lines(stroke:="black", opacity := 0.5) %>% 
+    layer_points() %>%
+    layer_model_predictions(model = "lm" ,stroke := "navy")  %>% 
+    layer_smooths(stroke:= "skyblue") %>% 
+    set_options(height = 250, width = 400)
+```
+
+##Axes and Legends
+
+###Axes
+You can use the `values` argument of add_axis to determine where labelled tick marks will appear on each axis. You can use the `subdivide` argument to insert unlabelled tick marks between the labelled tick marks on an axis.
+To control where an axis appears, use the `orient` argument. By default the x axis will appear on the bottom and y axis at the left side. It is simple to modify this by specifying it with the `orient` argument.
+```{r}
+# Setting a name for x and y axis
+# Adding to the code to place a labelled tick mark at 50, 60, 70, 80, 90 on the x axis.
+# Changing the orientation of the x and y axis.
+faithful %>% 
+  ggvis(~waiting, ~eruptions , fill:="blue") %>% 
+  layer_points() %>% 
+  add_axis("y", title = "Duration of eruption (m)",
+            orient = "right",
+            values = c(2, 3, 4, 5), subdivide = 9) %>% 
+  add_axis("x", title = "Time since previous eruption (m)",
+           orient = "top",
+           values=c(50,60,70,80,90), subdivide = 9) %>%
+  set_options(height= 250, width= 380)
+```
+
+###Legends
+For the legends `ggvis` uses `add_legend()`, which works similarly to `add_axis()`, except that it alters the legend of a plot. 
+```{r}
+# Add a legend to the plot below: use the correct title and orientation
+faithful %>% 
+  ggvis(~waiting, ~eruptions, opacity := 0.6, 
+        fill = ~factor(round(eruptions))) %>% 
+  layer_points() %>%
+  add_legend("fill", title= "~ duration (m)", orient = "left") %>%
+  set_options(height = 300, width = 630)
+```
+`ggvis` will create a separate legend for each property utilized. If more than a property was used, its able to combine them by giving a vector with the property names as the first parameter to `add_legend()`. a vector of property names as its first argument. For example, to combine a fill legend with a shape and size legend, call `add_legend(c("fill", "shape", "size"))`. Similarly, you can specify the values property inside `add_legend()` to explicitly set the visible legend values.
+```{r}
+faithful %>% 
+  ggvis(~waiting, ~eruptions, opacity := 0.6, 
+        fill = ~factor(round(eruptions)), shape = ~factor(round(eruptions)), 
+        size = ~round(eruptions))  %>%
+  layer_points() %>%
+  add_legend(scales=c("fill","shape","size"), title="~ duration (m)" , 
+             orient = "left" , values=c(2,3,4,5)) %>%
+  set_options(height = 300, width = 630)
+```
+
+##Property Mapping
+The color scheme of a `ggvis` plot can be change by adding a new scale to map a data set variable to fill colors. Property Mapping with `ggvis` provides several different functions for creating scales: `scale_datetime()`, `scale_logical()`, `scale_nominal()`, `scale_numeric()`, `scale_singular()`.
+
+The code below creates a new scale that will map the *numeric* `disp` variable to the fill property. The scale will create color output that ranges from red to yellow. But for the next code chunk is necesary to use `scale_nominal`since we are using a categorical variable `~factor(cyl)`.
+```{r, eval= FALSE}
+# Stroke color range from "darkred" to "orange".
+mtcars %>% 
+  ggvis(~wt, ~mpg, fill = ~disp, stroke = ~disp, strokeWidth := 2) %>%
+  layer_points() %>%
+  scale_numeric("fill", range = c("red", "yellow")) %>%
+  scale_numeric("stroke", range=c("darkred","orange")) %>%
+  set_options(height = 300, width = 630)
+
+# Scale mapping `factor(cyl)` to a new range of colors: purple, blue, and green. 
+mtcars %>% ggvis(~wt, ~mpg, fill = ~factor(cyl)) %>%
+  layer_points() %>%
+  scale_nominal("fill", range= c("purple", "blue", "green")) %>%
+  set_options(height = 300, width = 630)
+```
+```{r, echo=FALSE}
+mtcars %>% 
+  ggvis(~wt, ~mpg, fill = ~disp, stroke = ~disp, strokeWidth := 2) %>%
+  layer_points() %>%
+  scale_numeric("fill", range = c("red", "yellow")) %>%
+  scale_numeric("stroke", range=c("darkred","orange")) %>%
+  set_options(height = 300, width = 630)
+
+mtcars %>% ggvis(~wt, ~mpg, fill = ~factor(cyl)) %>%
+  layer_points() %>%
+  scale_nominal("fill", range= c("purple", "blue", "green")) %>%
+  set_options(height = 300, width = 600)
+```
+
+##Adjust Visual Property
+It is also possible to adjust any visual property in your graph with a scale (not just color). 
+You can scale to the opacity of a variable and have as a result some data points ending up be quite hard to see.
+```{r}
+# Add a scale that limits the range of opacity from 0.2 to 1. 
+mtcars %>% ggvis(x = ~wt, y = ~mpg, fill = ~factor(cyl), opacity = ~hp) %>%
+  layer_points() %>%
+  scale_numeric("opacity", range=c(0.2,1)) %>%
+  set_options(height = 300, width = 615)
+```
+Just as you can change the range of visual values that your scales produce, you can also change the domain of data values that they consider. For example, you can expand the domain of the x and y scales to zoom out on your plot. The second plot on the right will expand the y axis to cover data values from 0 to the largest y value in the data set.
+```{r}
+# Add a second scale that will expand the x axis to cover data values from 0 to 6.
+mtcars %>% ggvis(~wt, ~mpg, fill = ~disp) %>%
+  layer_points() %>%
+  scale_numeric("y", domain = c(0, NA)) %>%
+  scale_numeric("x", domain = c(0,6)) %>%
+  set_options(height = 300, width = 635)
+```
