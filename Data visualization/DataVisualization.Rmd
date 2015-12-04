@@ -1,11 +1,13 @@
 ---
 title: "Data Visualization"
 author: "Saul Garcia"
-date: "2015"
-output: 
+date: '2015'
+output:
   html_document:
-    toc: true
     theme: united
+    toc: yes
+  pdf_document:
+    toc: yes
 ---
 #Data Visualization with ggvis
 
