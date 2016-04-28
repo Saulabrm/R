@@ -3,10 +3,10 @@ title: "Data Visualization"
 author: "Saul Garcia"
 date: '2015'
 output:
+  pdf_document:
+    toc: yes
   html_document:
     theme: united
-    toc: yes
-  pdf_document:
     toc: yes
 ---
 #Data Visualization with ggvis
